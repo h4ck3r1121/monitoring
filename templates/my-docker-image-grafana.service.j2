@@ -1,0 +1,11 @@
+[Unit]
+Description=Grafana docker image; Final work; Task 3; See this: https://hub.docker.com/r/grafana/grafana
+Requires=docker.service
+
+[Service]
+User=root
+ExecStart=/bin/sh -c "docker run -d --name=grafana -p 3000:3000 grafana/grafana"
+
+[Install]
+WantedBy=multi-user.target
+

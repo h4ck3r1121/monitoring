@@ -1,0 +1,110 @@
+---
+- hosts: servers
+
+
+
+  tasks:
+
+    - name: "Yarn | GPG"
+      apt_key:
+        url: https://dl.yarnpkg.com/debian/pubkey.gpg
+        state: present
+
+
+    - name: "Yarn | Ensure Debian sources list file exists"
+      file:
+        path: /etc/apt/sources.list.d/yarn.list
+        owner: root
+        mode: 0644
+        state: touch
+
+
+    - name: "Yarn | Ensure Debian package is in sources list"
+      lineinfile:
+        dest: /etc/apt/sources.list.d/yarn.list
+        regexp: 'deb http://dl.yarnpkg.com/debian/ stable main'
+        line: 'deb http://dl.yarnpkg.com/debian/ stable main'
+        state: present
+
+
+    - name: "Update APT cache"
+      apt:
+        update_cache: yes
+
+
+    - name: Update all packages to their latest version
+      apt:
+        name: "*"
+        state: latest          
+
+
+    - name: "Install CURL"
+      apt:
+        pkg:
+          - curl
+
+
+    - name: Execute script to add NodeJS to repository
+      shell:
+        "curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - "
+
+
+    - name: Install needed software
+      apt: 
+        pkg: 
+          - git
+          - yarn
+          - nodejs
+#          - npm
+          - python3
+          - python3-pip
+
+
+    - name: "Install Prometheus"
+      include_role:
+        name: prometheus.prometheus.prometheus
+      vars:
+        prometheus_targets:
+          node:
+          - targets:
+            - enter_ip_address_node_exporter:port
+            - enter_ip_address_node_exporter:port
+            labels:
+              env: metrics          
+ 
+#    - name: "Install Grafana"
+#      include_role:
+#        name: grafana.grafana.grafana
+#      vars:
+#        grafana_security:
+#          admin_user: admin
+#          admin_password: admin
+
+
+    - name: "Install Docker"
+      include_role:
+        name: geerlingguy.docker
+
+
+    - name: "Install docker image Grafana"
+      shell: docker pull grafana/grafana
+
+
+    - name: "Copy 'my docker image' service"
+      template:
+        src: my-docker-image-grafana.service.j2
+        dest: /usr/lib/systemd/system/my-docker-image-grafana.service
+        owner: root
+        mode: 644
+
+
+    - name: "Restart services"
+      systemd_service:
+        daemon_reload: true
+
+
+    - name: "Start 'my docker image grafana' service"
+      systemd_service:
+        name: my-docker-image-grafana.service
+        state: started          
+
