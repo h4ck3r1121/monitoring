@@ -5,4 +5,4 @@
 4. Проверяем "main.yml". В переменной "gitlab_runner_executor" должен быть указан "shell".
 5. Запустить "install-needed-software.yml" с ключом "-b".
 
-P.S.: если не хватает ПО, то нужно запустить данный [playbook](https://github.com/h4ck3r1121/infrastructure-for-testing/blob/infra/install-needed-software.yml)
+P.S.: если не хватает дополнительного ПО, то нужно запустить данный [playbook](https://github.com/h4ck3r1121/infrastructure-for-testing/blob/infra/install-needed-software.yml)
