@@ -1,0 +1,49 @@
+---
+- hosts: servers
+
+
+# передаем в переменную "my-tag" значение переменной "$CI_COMMIT_SHORT_SHA" через extra-vars
+
+  vars:
+    docker_image: h4ck3r1121/my-app:{{ my_tag }}
+
+
+  tasks:
+
+    - name: "Install needed software for robertdebock/ansible-role-gitlab_runner role"
+      pip:
+        requirements: ./roles/robertdebock.gitlab_runner/requirements.txt
+
+
+    - name: "Install GitLab-runner"
+      include_role:
+        name: robertdebock.gitlab_runner
+          
+
+    - name: "Install docker image"
+      shell: docker pull {{ docker_image }}
+
+
+    - name: "Copy 'my docker image' service"
+      template:
+        src: my-docker-image.service.j2
+        dest: /usr/lib/systemd/system/my-docker-image.service
+        owner: root
+        mode: 644
+
+
+    - name: "Restart services"
+      systemd_service:
+        daemon_reload: true
+
+
+    - name: "Start 'my docker image' service"
+      systemd_service:
+        name: my-docker-image.service
+        state: started
+#        enabled: true    также сервис можно добавить в автозагрузку, раскомментировав нужную строку
+
+    - name: "Install Prometheus Node Exporter"
+      include_role:
+        name: prometheus.prometheus.node_exporter
+
